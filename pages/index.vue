@@ -5,7 +5,6 @@
 <script setup lang="ts">
 import {
   AmbientLight,
-  Color,
   IcosahedronBufferGeometry,
   LinearFilter,
   Mesh,
@@ -13,7 +12,6 @@ import {
   PerspectiveCamera,
   PointLight,
   Scene,
-  Vector2,
   WebGLRenderer,
   WebGLRenderTarget,
 } from "three";
@@ -72,7 +70,7 @@ onMounted(() => {
   renderer.shadowMap.enabled = true;
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0xffffff);
+  renderer.setClearColor(0x220000);
   container.value.appendChild(renderer.domElement);
 
   // コンポーザーの初期化
@@ -101,9 +99,9 @@ onMounted(() => {
     "tDiffuse1" // TextureID？ => 前のパス(RenderPass)から受け取ったテクスチャを入れるスロット名,デフォルトは"tDiffuse"だが、このシェーダにはないので、上書き
   );
   blendPass.uniforms.tDiffuse2.value = savePass.renderTarget.texture;
-  blendPass.uniforms.mixRatio.value = 0.8;
+  blendPass.uniforms.mixRatio.value = 0.75;
 
-  const blurSize = 1;
+  let blurSize = 10;
 
   // 水平ブラー (4)
   const horizontalBlurPass = new ShaderPass(HorizontalBlurShader);
@@ -137,7 +135,7 @@ onMounted(() => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     horizontalBlurPass.uniforms.h.value = (1 / window.innerWidth) * blurSize;
-    horizontalBlurPass.uniforms.h.value = (1 / window.innerWidth) * blurSize;
+    verticalBlurPass.uniforms.v.value = (1 / window.innerHeight) * blurSize;
     fxaaPass.uniforms.resolution.value.x = 1 / window.innerWidth;
     fxaaPass.uniforms.resolution.value.y = 1 / window.innerHeight;
   };
@@ -152,6 +150,10 @@ onMounted(() => {
     model.rotation.y += -0.02;
     model.rotation.z += 0.03;
     model.position.x += Math.sin(counter);
+
+    horizontalBlurPass.uniforms.h.value = (1 / window.innerWidth) * blurSize;
+    verticalBlurPass.uniforms.v.value = (1 / window.innerHeight) * blurSize;
+    blurSize = Math.max(0, blurSize - 0.1);
     counter += 0.05;
   }
   render();
